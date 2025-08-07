@@ -10,7 +10,7 @@ import classes from './Rates.module.css';
 
 import CountryData from '../../Libs/Countries.json';
 import countryToCurrency from '../../Libs/CountryCurrency.json';
-
+import { DropdownProvider } from '../../Providers/DropdownProvider';
 let countries = CountryData.CountryCodes;
 
 const Rates = () => {
@@ -47,6 +47,7 @@ const Rates = () => {
     });
 
     return (
+        <DropdownProvider>
         <div className={classes.container}>
             <div className={classes.content}>
                 <div className={classes.heading}>Currency Conversion</div>
@@ -54,6 +55,7 @@ const Rates = () => {
                 <div className={classes.rowWrapper}>
                     <div>
                         <DropDown
+                            id="from-currency"
                             leftIcon={<Flag code={fromCurrency} />}
                             label={'From'}
                             selected={countryToCurrency[fromCurrency]}
@@ -79,6 +81,7 @@ const Rates = () => {
 
                     <div>
                         <DropDown
+                            id="to-currency"
                             leftIcon={<Flag code={toCurrency} />}
                             label={'To'}
                             selected={countryToCurrency[toCurrency]}
@@ -108,6 +111,7 @@ const Rates = () => {
                 )}
             </div>
         </div>
+        </DropdownProvider>
     );
 };
 

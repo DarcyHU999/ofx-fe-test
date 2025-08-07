@@ -1,19 +1,40 @@
-import React, { useState } from 'react';
-
+import React, {  useRef, useEffect } from 'react';
 import PropTypes from 'prop-types';
-
 import classes from './DropDown.module.css';
+import { useDropdown } from '../../Hooks/useDropdown';
 
 const DropDown = (props) => {
-    const [open, setOpen] = useState(false);
+    const { openDropdownId, toggleDropdown } = useDropdown();
+    const menuRef = useRef(null);
+    const dropdownId = props.id || 'default-dropdown';
+    const isOpen = openDropdownId === dropdownId;
+  
+    useEffect(() => {
+      const handleClickOutside = (event) => {
+        if (menuRef.current && !menuRef.current.contains(event.target)) {
+          toggleDropdown(dropdownId);
+        }
+      }
+  
+      if (isOpen) {
+        document.addEventListener('click', handleClickOutside);
+      } else {
+        document.removeEventListener('click', handleClickOutside);
+      }
+  
+      return () => {
+        document.removeEventListener('click', handleClickOutside);
+      };
+    }, [isOpen, toggleDropdown, dropdownId]);
 
-    const handleOpen = () => {
-        setOpen(!open);
+    const handleOpen = (event) => {
+        event.stopPropagation();
+        toggleDropdown(dropdownId);
     };
 
     const handleSelect = (key) => {
         props.setSelected(key);
-        setOpen(false);
+        toggleDropdown(dropdownId);
     };
 
     return (
@@ -32,7 +53,7 @@ const DropDown = (props) => {
                         />
 
                         <path
-                            className={`${classes.toggleArrow} ${open ? classes.toggled : ''}`}
+                            className={`${classes.toggleArrow} ${isOpen ? classes.toggled : ''}`}
                             fillRule="evenodd"
                             clipRule="evenodd"
                             d="M9.20711 11.3894C8.76165 11.3894 8.53857 11.928 8.85355 12.243L11.6464 15.0359C11.8417 15.2311 12.1583 15.2311 12.3536 15.0358L15.1464 12.243C15.4614 11.928 15.2383 11.3894 14.7929 11.3894H9.20711Z"
@@ -41,10 +62,10 @@ const DropDown = (props) => {
                     </svg>
                 </div>
             </button>
-            {open ? (
-                <ul className={classes.menu}>
+            {isOpen ? (
+                <ul className={classes.menu} ref={menuRef}>
                     {props.options.map(({ option, key, icon }) => (
-                        <li className={classes['menu-item']}>
+                        <li key={key} className={classes['menu-item'] }>
                             <button className={classes.button} onClick={() => handleSelect(key)}>
                                 {icon}
                                 {option}
@@ -58,6 +79,7 @@ const DropDown = (props) => {
 };
 
 DropDown.propTypes = {
+    id: PropTypes.string,
     selected: PropTypes.string,
     setSelected: PropTypes.func,
     label: PropTypes.string,
