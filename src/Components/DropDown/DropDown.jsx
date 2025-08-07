@@ -1,7 +1,7 @@
 import React, {  useRef, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import classes from './DropDown.module.css';
-import { useDropdown } from '../../hooks/useDropdown';
+import { useDropdown } from '../../Hooks/useDropdown';
 
 const DropDown = (props) => {
     const { openDropdownId, toggleDropdown } = useDropdown();
