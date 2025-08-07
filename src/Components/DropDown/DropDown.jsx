@@ -9,6 +9,7 @@ const DropDown = (props) => {
     const dropdownId = props.id || 'default-dropdown';
     const isOpen = openDropdownId === dropdownId;
   
+    // Handle click outside to close dropdown
     useEffect(() => {
       const handleClickOutside = (event) => {
         if (menuRef.current && !menuRef.current.contains(event.target)) {
@@ -62,6 +63,7 @@ const DropDown = (props) => {
                     </svg>
                 </div>
             </button>
+            {/* Render dropdown menu only when open */}
             {isOpen ? (
                 <ul className={classes.menu} ref={menuRef}>
                     {props.options.map(({ option, key, icon }) => (
