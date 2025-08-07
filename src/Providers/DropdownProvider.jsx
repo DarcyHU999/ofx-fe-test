@@ -8,6 +8,7 @@ export const DropdownContext = createContext({
 });
 
 export const DropdownProvider = ({ children }) => {
+  // Track currently open dropdown (only one can be open at a time)
   const [openDropdownId, setOpenDropdownId] = useState(null);
 
   const openDropdown = useCallback((id) => {
@@ -18,6 +19,7 @@ export const DropdownProvider = ({ children }) => {
     setOpenDropdownId(null);
   }, []);
 
+  // Toggle dropdown: open if closed, close if open
   const toggleDropdown = useCallback((id) => {
     setOpenDropdownId(prev => prev === id ? null : id);
   }, []);
