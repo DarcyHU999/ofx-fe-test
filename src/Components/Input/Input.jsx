@@ -1,6 +1,7 @@
-import React, { useState, useRef, useEffect } from 'react';      
+import React, { useState, useRef, useEffect, useCallback } from 'react';      
 import classes from './Input.module.css';
 import PropTypes from 'prop-types';
+import { useDebounce } from '../../Hooks/useDebounce';
 
 const Input = (props) => {
     const [isError, setIsError] = useState(false);
@@ -13,6 +14,9 @@ const Input = (props) => {
         maxDecimalDigits: 'pending'
     });
     const inputRef = useRef(null);
+
+    // Debounce input value with loading state
+    const { debouncedValue, isDebouncing } = useDebounce(props.value);
 
     // Validate amount input with real-time feedback
     const validateAmount = (value) => {
@@ -64,6 +68,30 @@ const Input = (props) => {
     useEffect(() => {
         validateAmount(props.value);
     }, [props.value]);
+
+    // Check if current value is valid for debouncing
+    const isCurrentValueValid = useCallback(() => {
+        if (props.value === '') return true;
+        return !Object.values(validationStates).some(state => state === 'invalid');
+    }, [props.value, validationStates]);
+      
+
+    // Notify parent about debouncing state and debounced value
+    useEffect(() => {
+        if (props.onDebouncingChange) {
+            // Keep loading if current value is invalid
+            const shouldKeepLoading = isDebouncing || !isCurrentValueValid();
+            props.onDebouncingChange(shouldKeepLoading);
+        }
+        if (props.onDebouncedValueChange) {
+            // Only update debounced value if current value is valid
+            if (isCurrentValueValid()) {
+                props.onDebouncedValueChange(debouncedValue);
+            }
+            // Don't update debounced value if current value is invalid
+            // This prevents showing '0' when transitioning from invalid to valid
+        }
+    }, [isDebouncing, debouncedValue, isCurrentValueValid, props.onDebouncingChange, props.onDebouncedValueChange, props]);
 
     const handleContainerClick = () => {
         inputRef.current?.focus(); 
@@ -133,6 +161,8 @@ Input.propTypes = {
     className: PropTypes.string,
     value: PropTypes.string,
     onChange: PropTypes.func,
+    onDebouncingChange: PropTypes.func,
+    onDebouncedValueChange: PropTypes.func,
     style: PropTypes.object,
     label: PropTypes.string,
     currency: PropTypes.string,

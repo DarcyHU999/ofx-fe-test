@@ -1,0 +1,64 @@
+.conversionResultContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    width: 400px;
+    font-family: 'Nunito Sans';
+    color: #0b1a3f;
+    border: 1px solid #e5e5e5;
+    border-radius: 4px;
+    box-sizing: border-box;
+    padding-inline: 6px;
+    padding-block: 1px;
+    font-size: 16px;
+    gap: 10px;
+    padding-inline: 10px;
+    padding-block: 5px;
+
+}
+
+.conversionResultHeader {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    font-weight: 600;
+    font-size: 16px;
+    height: 20px;
+}
+.conversionResultContent {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    justify-content: space-around;
+    width: 100%;
+    height: 140px;
+    border: 1px solid #e5e5e5;
+    border-radius: 4px;
+    box-sizing: border-box;
+    padding-inline: 10px;
+    position: relative;
+}
+
+.loadingCover{
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f5f5f5;
+    opacity: 0.7;
+    border-radius: 4px;
+    box-sizing: border-box;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 1;
+}
+
+.loadingContainer{
+    background-color: none;
+}
