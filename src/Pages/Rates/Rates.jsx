@@ -42,7 +42,9 @@ const Rates = () => {
                 refetch();
                 return 0;
             }
-
+            if(error){
+                return 0;
+            }
             return (prevState + deltaTime * 0.0001) % 1;
         });
     });
