@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import DropDown from '../../Components/DropDown';
 import ProgressBar from '../../Components/ProgressBar';
 import Loader from '../../Components/Loader';
@@ -32,6 +32,9 @@ const Rates = () => {
         <img alt={code || ''} src={`/img/flags/${code || ''}.svg`} width="20px" className={classes.flag} />
     );
 
+    const fromFlagIcon = useMemo(() => <Flag code={fromCurrency} />, [fromCurrency]);
+    const toFlagIcon = useMemo(() => <Flag code={toCurrency} />, [toCurrency]);
+
     // Demo progress bar moving :)
     useAnimationFrame(!loading, (deltaTime) => {
         setProgression((prevState) => {
@@ -39,10 +42,7 @@ const Rates = () => {
                 refetch();
                 return 0;
             }
-            if(error){
-                setLoading(true);
-                return 0;
-            }
+
             return (prevState + deltaTime * 0.0001) % 1;
         });
     });
@@ -80,6 +80,12 @@ const Rates = () => {
       const shouldFreeze = loading || isDebouncing || !!error;
       setFreezeDisplay(shouldFreeze);
     }, [loading, isDebouncing, error]);
+
+    // retry handler: freeze UI then retry fetching
+    const handleRetry = () => {
+      setFreezeDisplay(true);
+      refetch();
+    };
     
     return (
         <DropdownProvider>
@@ -91,7 +97,7 @@ const Rates = () => {
                     <div>
                         <DropDown
                             id="from-currency"
-                            leftIcon={<Flag code={fromCurrency} />}
+                            leftIcon={fromFlagIcon}
                             label={'From'}
                             selected={countryToCurrency[fromCurrency]}
                             options={countries.map(({ code }) => ({
@@ -117,7 +123,7 @@ const Rates = () => {
                     <div>
                         <DropDown
                             id="to-currency"
-                            leftIcon={<Flag code={toCurrency} />}
+                            leftIcon={toFlagIcon}
                             label={'To'}
                             selected={countryToCurrency[toCurrency]}
                             options={countries.map(({ code }) => ({
@@ -145,17 +151,34 @@ const Rates = () => {
                         onChange={(e) => setAmount(e.target.value)}
                         onDebouncingChange={handleDebouncingChange} // Pass debouncing callback
                         onDebouncedValueChange={handleDebouncedValueChange} // Pass debounced value callback
-                        leftIcon={<Flag code={fromCurrency} />}
+                        leftIcon={fromFlagIcon}
                         currency={countryToCurrency[fromCurrency]}
                     />
                     <ConversionResult
                         trueAmount={convertAmount(debouncedAmount, exchangeRate, MARKUP_PERCENTAGE)} // Use debounced value
                         amountAfterMarkup={convertAmountWithMarkup(debouncedAmount, exchangeRate)} // Use debounced value
                         currency={countryToCurrency[toCurrency]}
-                        leftIcon={<Flag code={toCurrency} />}
+                        leftIcon={toFlagIcon}
                         isLoading={freezeDisplay}
                     />
                 </div>
+
+                {/* Error panel with guidance */}
+                {error ? (
+                  <div className={classes.errorPanel}>
+                    <div className={classes.errorTitle}>Failed to load exchange rate</div>
+                    <div className={classes.errorMessage}>{String(error)}</div>
+                    <div className={classes.errorHint}>
+                      Try:
+                      <ul className={classes.errorList}>
+                        <li>Check your network connection</li>
+                        <li>Verify selected currencies are valid</li>
+                        <li>Retry the request</li>
+                      </ul>
+                    </div>
+                    <button onClick={handleRetry} className={classes.retryButton}>Retry</button>
+                  </div>
+                ) : null}
             </div>
         </div>
         </DropdownProvider>

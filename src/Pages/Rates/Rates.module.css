@@ -69,3 +69,37 @@
 .slow {
     transition: all 1s cubic-bezier(0.55, 0.055, 0.675, 0.19) !important;
 }
+
+/* Error panel styles */
+.errorPanel {
+    margin-top: 12px;
+    padding: 12px;
+    border: 1px solid #ffb3b3;
+    background: #fff5f5;
+    color: #8a1f1f;
+    border-radius: 8px;
+}
+.errorTitle {
+    font-weight: 600;
+    margin-bottom: 6px;
+}
+.errorMessage {
+    font-size: 12px;
+    opacity: 0.9;
+    margin-bottom: 8px;
+}
+.errorHint {
+    font-size: 12px;
+    margin-bottom: 8px;
+}
+.errorList {
+    margin: 6px 0 0 18px;
+}
+.retryButton {
+    padding: 6px 10px;
+    border: 1px solid #8a1f1f;
+    background: #8a1f1f;
+    color: #fff;
+    border-radius: 6px;
+    cursor: pointer;
+}
