@@ -4,6 +4,18 @@ import classes from './Input.module.css';
 import { useDebounce } from '../../Hooks/useDebounce';
 
 const Input = (props) => {
+  const {
+    className,
+    style,
+    label,
+    value,
+    onChange,
+    onDebouncingChange,
+    onDebouncedValueChange,
+    currency,
+    leftIcon,
+  } = props;
+
   const [isError, setIsError] = useState(false);
   const [validationStates, setValidationStates] = useState({
     onlyNumbers: 'pending',
@@ -15,10 +27,10 @@ const Input = (props) => {
   const inputRef = useRef(null);
 
   // Debounced value + debouncing flag
-  const { debouncedValue, isDebouncing } = useDebounce(props.value);
+  const { debouncedValue, isDebouncing } = useDebounce(value);
 
   // Check if current input is valid
-  const isValid = props.value === '' || 
+  const isValid = value === '' || 
     (validationStates.onlyNumbers !== 'invalid' && 
     validationStates.noLeadingDot !== 'invalid' && 
     validationStates.singleDecimal !== 'invalid' && 
@@ -26,8 +38,8 @@ const Input = (props) => {
     validationStates.maxDecimalDigits !== 'invalid');
 
   // Validate current input value
-  const validateAmount = (value) => {
-    if (value === '') {
+  const validateAmount = (nextValue) => {
+    if (nextValue === '') {
       setValidationStates({
         onlyNumbers: 'pending',
         noLeadingDot: 'pending',
@@ -39,11 +51,11 @@ const Input = (props) => {
       return;
     }
 
-    const onlyNumbersValid = /^[\d.]+$/.test(value);
+    const onlyNumbersValid = /^[\d.]+$/.test(nextValue);
     const next = {
       onlyNumbers: onlyNumbersValid ? 'valid' : 'invalid',
-      noLeadingDot: !value.startsWith('.') ? 'valid' : 'invalid',
-      singleDecimal: (value.match(/\./g) || []).length <= 1 ? 'valid' : 'invalid',
+      noLeadingDot: !nextValue.startsWith('.') ? 'valid' : 'invalid',
+      singleDecimal: (nextValue.match(/\./g) || []).length <= 1 ? 'valid' : 'invalid',
       maxIntegerDigits: 'valid',
       maxDecimalDigits: 'valid',
     };
@@ -52,7 +64,7 @@ const Input = (props) => {
       next.maxIntegerDigits = 'invalid';
       next.maxDecimalDigits = 'invalid';
     } else {
-      const [integerPart, decimalPart = ''] = value.split('.');
+      const [integerPart, decimalPart = ''] = nextValue.split('.');
       if (integerPart.length > 9) next.maxIntegerDigits = 'invalid';
       if (decimalPart.length > 2) next.maxDecimalDigits = 'invalid';
     }
@@ -68,8 +80,8 @@ const Input = (props) => {
   };
 
   useEffect(() => {
-    validateAmount(props.value);
-  }, [props.value]);
+    validateAmount(value);
+  }, [value]);
 
   // Notify parent only when values truly change (prevents render-effect loops)
   const prevDebouncingRef = useRef();
@@ -79,22 +91,22 @@ const Input = (props) => {
     const nextDebouncing = isDebouncing || !isValid;
 
     if (
-      props.onDebouncingChange &&
+      onDebouncingChange &&
       nextDebouncing !== prevDebouncingRef.current
     ) {
       prevDebouncingRef.current = nextDebouncing;
-      props.onDebouncingChange(nextDebouncing);
+      onDebouncingChange(nextDebouncing);
     }
 
     if (
-      props.onDebouncedValueChange &&
+      onDebouncedValueChange &&
       isValid &&
       debouncedValue !== prevDebouncedRef.current
     ) {
       prevDebouncedRef.current = debouncedValue;
-      props.onDebouncedValueChange(debouncedValue);
+      onDebouncedValueChange(debouncedValue);
     }
-  }, [isDebouncing, debouncedValue, isValid, props.onDebouncingChange, props.onDebouncedValueChange]);
+  }, [isDebouncing, debouncedValue, isValid, onDebouncingChange, onDebouncedValueChange]);
 
   const handleContainerClick = () => {
     inputRef.current?.focus();
@@ -108,28 +120,28 @@ const Input = (props) => {
 
   return (
     <div
-      className={`${classes.container} ${props.className}`}
-      style={props.style}
+      className={`${classes.container} ${className}`}
+      style={style}
       onClick={handleContainerClick}
     >
-      {props.label && (
+      {label && (
         <span className={`${classes.label} ${isError ? classes.errorLabel : ''}`}>
-          {isError ? 'Please enter a valid amount' : props.label}
+          {isError ? 'Please enter a valid amount' : label}
         </span>
       )}
 
       <div className={`${classes.inputWrapper} ${isError ? classes.errorInputWrapper : ''}`}>
-        {props.leftIcon}
+        {leftIcon}
         <input
           type="text"
           ref={inputRef}
           className={classes.input}
           placeholder="00.00"
-          value={props.value}
-          onChange={props.onChange}
+          value={value}
+          onChange={onChange}
           maxLength={12}
         />
-        <span className={classes.currency}>{props.currency}</span>
+        <span className={classes.currency}>{currency}</span>
       </div>
 
       {/* compact validation indicators */}
