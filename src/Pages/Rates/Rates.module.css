@@ -22,17 +22,25 @@
 .rowWrapper {
     display: flex;
     flex-direction: row;
+    align-items: flex-start;
+    justify-content: space-between;
 }
 .exchangeWrapper {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: flex-end;
-    margin: 0px 30px;
+}
+
+.rateDescription {
+    font-size: 13px;
+    color: #142557;
+    opacity: 0.7;
 }
 
 .transferIcon {
-    margin-bottom: 18px;
+    margin-top: 2px;
+    margin-bottom: 5px;
 }
 .transferIcon > svg > path {
     fill: #142557;
@@ -41,6 +49,8 @@
     font-size: 18px;
     color: #142557;
     opacity: 0.7;
+    font-weight: 600;
+
 }
 
 .flag {
@@ -54,6 +64,7 @@
     display: flex;
     justify-content: center;
     margin-top: 20px;
+
 }
 .slow {
     transition: all 1s cubic-bezier(0.55, 0.055, 0.675, 0.19) !important;
