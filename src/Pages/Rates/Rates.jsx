@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import DropDown from '../../Components/DropDown';
 import ProgressBar from '../../Components/ProgressBar';
 import Loader from '../../Components/Loader';
@@ -13,6 +13,7 @@ import CountryData from '../../Libs/Countries.json';
 import countryToCurrency from '../../Libs/CountryCurrency.json';
 import { DropdownProvider } from '../../Providers/DropdownProvider';
 import { convertAmount, convertAmountWithMarkup } from '../../Utils/currencyConvertUtil';
+import { useExchangeRate } from '../../Hooks/useExchangeRate';
 
 let countries = CountryData.CountryCodes;
 const MARKUP_PERCENTAGE = 0.005;
@@ -22,30 +23,24 @@ const Rates = () => {
     const [toCurrency, setToCurrency] = useState('US');
     const [amount, setAmount] = useState('');
     const [debouncedAmount, setDebouncedAmount] = useState(''); // Store debounced value
-    const [exchangeRate, setExchangeRate] = useState(0.7456);
     const [progression, setProgression] = useState(0);
     const [loading, setLoading] = useState(false);
     const [isDebouncing, setIsDebouncing] = useState(false); // Track debouncing state
-
+    const [freezeDisplay, setFreezeDisplay] = useState(false);
+    const { exchangeRate, error, refetch } = useExchangeRate(countryToCurrency[fromCurrency], countryToCurrency[toCurrency], setLoading);
     const Flag = ({ code }) => (
         <img alt={code || ''} src={`/img/flags/${code || ''}.svg`} width="20px" className={classes.flag} />
     );
-
-    const fetchData = async () => {
-        if (!loading) {
-            setLoading(true);
-
-            await new Promise((resolve) => setTimeout(resolve, 2000));
-
-            setLoading(false);
-        }
-    };
 
     // Demo progress bar moving :)
     useAnimationFrame(!loading, (deltaTime) => {
         setProgression((prevState) => {
             if (prevState > 0.998) {
-                fetchData();
+                refetch();
+                return 0;
+            }
+            if(error){
+                setLoading(true);
                 return 0;
             }
             return (prevState + deltaTime * 0.0001) % 1;
@@ -65,6 +60,27 @@ const Rates = () => {
         }
     };
 
+    // Reset progression when fromCurrency or toCurrency changes
+    useEffect(() => {
+        setProgression(0);
+      }, [fromCurrency, toCurrency]);
+
+    // freeze immediately on currency change
+    const onFromChange = (key) => {
+      setFreezeDisplay(true);
+      setFromCurrency(key);
+    };
+    const onToChange = (key) => {
+      setFreezeDisplay(true);
+      setToCurrency(key);
+    };
+
+    //freeze display when loading, debouncing, or error
+    useEffect(() => {
+      const shouldFreeze = loading || isDebouncing || !!error;
+      setFreezeDisplay(shouldFreeze);
+    }, [loading, isDebouncing, error]);
+    
     return (
         <DropdownProvider>
         <div className={classes.container}>
@@ -83,19 +99,19 @@ const Rates = () => {
                                 key: code,
                                 icon: <Flag code={code} />,
                             }))}
-                            setSelected={(key) => {
-                                setFromCurrency(key);
-                            }}
+                            setSelected={onFromChange}
                             style={{ marginRight: '20px' }}
                         />
                     </div>
 
                     <div className={classes.exchangeWrapper}>
                         <div className={classes.transferIcon}>
-                            <Transfer height={'25px'} />
+                            <Transfer height={'19px'} />
                         </div>
+                        <div className={classes.rateDescription}>OFX Rate</div>
 
-                        <div className={classes.rate}>{exchangeRate}</div>
+                        
+                        {error||loading ? <Loader width={'25px'} height={'25px'} /> : <div className={classes.rate}>{exchangeRate}</div>}
                     </div>
 
                     <div>
@@ -109,9 +125,7 @@ const Rates = () => {
                                 key: code,
                                 icon: <Flag code={code} />,
                             }))}
-                            setSelected={(key) => {
-                                setToCurrency(key);
-                            }}
+                            setSelected={onToChange}
                             style={{ marginLeft: '20px' }}
                         />
                     </div>
@@ -123,15 +137,6 @@ const Rates = () => {
                     style={{ marginTop: '20px' }}
                 />
 
-                {loading ? (
-                    <div className={classes.loaderWrapper}>
-                        <Loader width={'25px'} height={'25px'} />
-                    </div>
-                ) : (
-                    <div className={classes.loaderWrapper}>
-                        <div style={{width: '25px', height: '25px'}} />
-                    </div>
-                )}
                 <div className={classes.rowWrapper} style={{marginTop: '20px', justifyContent: 'space-between'}}>
                     <Input
                         label={'Amount'}
@@ -144,11 +149,11 @@ const Rates = () => {
                         currency={countryToCurrency[fromCurrency]}
                     />
                     <ConversionResult
-                        trueAmount={convertAmount(debouncedAmount, exchangeRate)} // Use debounced value
-                        amountAfterMarkup={convertAmountWithMarkup(debouncedAmount, exchangeRate, MARKUP_PERCENTAGE)} // Use debounced value
+                        trueAmount={convertAmount(debouncedAmount, exchangeRate, MARKUP_PERCENTAGE)} // Use debounced value
+                        amountAfterMarkup={convertAmountWithMarkup(debouncedAmount, exchangeRate)} // Use debounced value
                         currency={countryToCurrency[toCurrency]}
                         leftIcon={<Flag code={toCurrency} />}
-                        isLoading={isDebouncing} // Pass debouncing state as loading
+                        isLoading={freezeDisplay}
                     />
                 </div>
             </div>
