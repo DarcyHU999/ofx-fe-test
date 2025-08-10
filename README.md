@@ -1,7 +1,7 @@
 ## OFX Frontend Coding Test
 
 ### Overview
-A simple currency conversion UI that fetches live rates and shows users both the true amount and the amount after OFX markup. Implements smooth progress indication and robust data fetching with debounce, timeout/retry, and race-condition safety.
+A currency conversion UI that fetches live rates and shows users both the true amount and the amount after OFX markup. Implements smooth progress indication and robust data fetching with debounce, timeout/retry, and race-condition safety.
 
 ### What’s implemented (mapped to questions)
 - **Q1 – Close dropdowns on outside click**: Both dropdowns close when clicking outside. Only one dropdown can be open at a time.
@@ -11,7 +11,7 @@ A simple currency conversion UI that fetches live rates and shows users both the
   - Markup is 0.5% (0.005). Utilities handle rounding/edge cases.
 - **Q4 – Live rate fetch + progress refetch**:
   - Fetches from `https://rates.staging.api.paytron.com/rate/public` and displays `retailRate`.
-  - Progress bar reaches the end → triggers refetch (rising-edge only).
+  - Progress bar reaches the end → triggers refetch.
   - UI freezes amounts/currency/icons during loading/debouncing/error to avoid flicker.
 
 ### How to run
@@ -36,14 +36,8 @@ No environment variables are required.
   - **Branches** ~88%
   - **Functions** ~91%
   - **Lines** ~95%
-- Notes:
-  - Console noise is muted in tests (silenced `console.error`).
-  - Asynchronous behaviors are stabilized using `act`, `waitFor`, and deterministic RAF mocks.
 
 ### Technical Notes
-- **Progress & refetch**
-  - `requestAnimationFrame` drives the progress bar.
-  - Rising-edge detection triggers refetch exactly once at the end of each cycle.
 - **Robust data fetching** (`useExchangeRate`)
   - Timeout + retry with simple backoff for timeouts.
   - "Last request wins" guard so stale responses can’t override newer data.
@@ -54,8 +48,6 @@ No environment variables are required.
   - Debounced value and debouncing flag.
   - Validation rules (numbers only, single dot, max integer/decimal digits).
   - Parent notified only on real changes to avoid render-effect loops.
-- **ESLint**
-  - Fixed hook dependency warnings and strict comparisons.
 - **Docker**
   - Dev-only Dockerfile for hot-reload development (no production Nginx needed).
 
@@ -64,21 +56,11 @@ No environment variables are required.
 - Uses `retailRate` from response as the displayed rate.
 - Markup: 0.5% applied for the displayed “after markup” amount.
 
-### How to impress further (optional enhancements)
+### How to impress further
 - **Accessibility**: Keyboard navigation for dropdowns, ARIA attributes for inputs and loader, focus management on open/close.
 - **i18n/Localization**: Extract copy, format numbers/currencies per locale.
-- **Performance**: Memoization auditing, React Profiler traces, code splitting for pages.
 - **Visual testing**: Storybook stories and visual regression tests.
 - **E2E tests**: Playwright/Cypress for happy paths (dropdown select, input, refetch cycle).
 - **Error boundaries**: Wrap critical UI to handle render-time exceptions.
 - **CI**: Add a GitHub Action to run lint/test/coverage threshold gates.
 - **Type safety**: Port hooks/utils to TypeScript for stronger contracts.
-
-### Scripts
-- Start dev: `npm start`
-- Unit tests + coverage: `CI=true npm test -- --coverage --watchAll=false`
-- Lint: `npm run lint`
-
-### Notes
-- SPA deep links handled by dev server; no extra configuration required.
-- Images and flags are served from `public/`. 
