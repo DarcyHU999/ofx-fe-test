@@ -22,6 +22,7 @@ A currency conversion UI that fetches live rates and shows users both the true a
   - Tests: `CI=true npm test -- --coverage --watchAll=false`
 
 - **Method B: Dev container (Docker)**
+  - Prerequisite: Docker is running (Docker Desktop on macOS/Windows, or Docker daemon on Linux). Verify with `docker version`.
   - Build: `docker build -t ofx-fe-test:dev .`
   - Run (with hot reload):
     - `docker run --rm -it -p 3000:3000 -v "$PWD":/app -v /app/node_modules ofx-fe-test:dev`
@@ -49,7 +50,7 @@ No environment variables are required.
   - Validation rules (numbers only, single dot, max integer/decimal digits).
   - Parent notified only on real changes to avoid render-effect loops.
 - **Docker**
-  - Dev-only Dockerfile for hot-reload development (no production Nginx needed).
+  - Dev-only Dockerfile for hot-reload development.
 
 ### API
 - Base: `https://rates.staging.api.paytron.com/rate/public`
